@@ -53,20 +53,20 @@ class User extends Model {
     return this;
   }
   static associate(models) {
-    this.belongsTo(models.Company, {
+    this.belongsToMany(models.Company, {
+      through: "company_user",
+      as: "clientCompany",
       foreignKey: "company_id",
-      through: "creator_company",
-      as: "creatorCompany",
-    });
-    this.belongsToMany(models.Bill, {
-      foreignKey: "bill_id",
-      through: "creator_bill",
-      as: "creatorBill",
     });
     this.belongsToMany(models.Company, {
-      foreignKey: "company_id",
-      through: "client_company",
-      as: "clientCompany",
+      through: "company_creator",
+      as: "creatorCompany",
+      foreignKey: "creator_id",
+    });
+    this.belongsToMany(models.Bill, {
+      through: "bill_creator",
+      as: "billCreator",
+      foreignKey: "creator_id",
     });
   }
 }

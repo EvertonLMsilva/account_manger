@@ -16,10 +16,6 @@ class Bill extends Model {
           type: DataTypes.INTEGER,
           allowNull: false,
         },
-        creator_id: {
-          type: DataTypes.INTEGER,
-          allowNull: false,
-        },
       },
       {
         sequelize,
@@ -32,14 +28,14 @@ class Bill extends Model {
   }
   static associate(models) {
     this.belongsTo(models.Company, {
-      foreignKey: "company_id",
       through: "bill_company",
       as: "billCompany",
+      foreignKey: "company_id",
     });
-    this.belongsToMany(models.User, {
-      foreignKey: "creator_id",
+    this.belongsTo(models.User, {
       through: "bill_creator",
       as: "billCreator",
+      foreignKey: "bill_id",
     });
   }
 }

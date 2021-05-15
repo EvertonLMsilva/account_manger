@@ -12,9 +12,12 @@ class Company extends Model {
           type: DataTypes.STRING,
           allowNull: false,
         },
-        creator_id: {
+        creator_id:{
           type: DataTypes.INTEGER,
           allowNull: false,
+          references: { model: "users", key: "id" },
+          onUpdate: "CASCADE",
+          onDelete: "CASCADE",
         },
       },
       {
@@ -27,16 +30,21 @@ class Company extends Model {
     return this;
   }
   static associate(models) {
-    this.hasOne(models.User, {
+    this.belongsTo(models.User, {
+      through: "company_creator",
+      as: "creatorCompany",
       foreignKey: "creator_id",
-      as: "companyCreator",
     });
-    this.belongsToMany(models.User, {
-      foreignKey: "client_id",
+    this.belongsTo(models.User, {
       through: "company_client",
       as: "companyClient",
+      foreignKey: "client_id",
     });
-    this.hasMany(models.Bill, { foreignKey: "bill_id", as: "companyBill" });
+    this.belongsTo(models.Bill, {
+      through: "bill_company",
+      as: "billCompany",
+      foreignKey: "company_id",
+    })
   }
 }
 module.exports = Company;

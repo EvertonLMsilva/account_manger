@@ -2,36 +2,31 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    await queryInterface.createTable("bills", {
+    await queryInterface.createTable("company_user", {
       id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
         autoIncrement: true,
         allowNull: false,
       },
-      name: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
-      value: {
+      company_id:{
         type: Sequelize.INTEGER,
         allowNull: false,
+        references: { model: "company", key: "id" },
+        onUpdate: "CASCADE",
+        onDelete: "CASCADE",
       },
-      portion: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-      },
-      client_id:{
+      creator_id:{
         type: Sequelize.INTEGER,
         allowNull: false,
         references: { model: "users", key: "id" },
         onUpdate: "CASCADE",
         onDelete: "CASCADE",
       },
-      company_id:{
+      client_id:{
         type: Sequelize.INTEGER,
-        allowNull: false,
-        references: { model: "company", key: "id" },
+        allowNull: true,
+        references: { model: "users", key: "id" },
         onUpdate: "CASCADE",
         onDelete: "CASCADE",
       },
@@ -47,6 +42,6 @@ module.exports = {
   },
 
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.dropTable("bills");
+    await queryInterface.dropTable("company_user");
   },
 };
