@@ -4,19 +4,25 @@ const { verifyParamsForDB } = require("../utils/verifyParams");
 
 module.exports = {
   //Adicionar uma empresa
- async registerRepo(name, phone, creator_id, client_id) {
-   //Verifica se algum dos parametros obrigatórios esta nulo.
-   const verifyParams = await verifyParamsForDB([
-    { name },
-    { phone },
-    { creator_id },
-    { client_id },
-  ]);
-  if (verifyParams) return verifyParams;
+  async registerRepo(name, phone, creator_id, client_id) {
+    //Verifica se algum dos parametros obrigatórios esta nulo.
+    const verifyParams = await verifyParamsForDB([
+      { name },
+      { phone },
+      { creator_id },
+      { client_id },
+    ]);
+    if (verifyParams) {
+      debuggLog(verifyParams, "atention");
+      return verifyParams;
+    }
     // Faz uma procura por uma empresa atravéz do telefone.
     const companyFind = await CompanyModel.findOne({ where: { phone } });
     //Verifica se a compania já existe no banco.
-    if (companyFind) return { Err: "Telefone da empresa já cadastrado!" };
+    if (companyFind) {
+      debuggLog("Telefone da empresa já cadastrado", "atention");
+      return { Err: "Telefone da empresa já cadastrado!" };
+    }
     //Cria um novo cadastro no banco.
     const companyCreate = await CompanyModel.create(
       { name, phone, creator_id },
@@ -24,11 +30,16 @@ module.exports = {
         include: ["companyCreator"],
       }
     );
-    companyCreate.setCompanyUser(client_id)
+    //Associação de models
+    companyCreate.setCompanyUser(client_id);
     try {
+      //Log para histórico
+      debuggLog("Empresa cadastrada com sucesso!", "sucess");
       //verifica se o cadastro foi bem sucedido.
       return { sucess: "Empresa cadastrada com sucesso!" };
     } catch {
+      //Log para histórico
+      debuggLog("Erro ao cadastrar Empresa!", "err");
       //retorna uma mensagem de erro se o cadastro nao for sucedido
       return { Err: "Erro ao cadastrar Empresa! " };
     }
@@ -59,7 +70,10 @@ module.exports = {
         return data.map((item) => item.dataValues);
       })
       //retorna uma mensagem de erro se a pesquisa não for sucedida
-      .catch(() => ({ Err: "Erro ao procurar empresa!" }));
+      .catch(() => {
+        debuggLog("Erro ao procurar empresa!", "err");
+        return { Err: "Erro ao procurar empresa!" };
+      });
   },
   //Pesquisa apenas uma empresa
   async findOneRepo(id) {
@@ -87,7 +101,10 @@ module.exports = {
         return data.dataValues;
       })
       //retorna uma mensagem de erro se a pesquisa não for sucedida
-      .catch(() => ({ Err: "Erro ao procurar empresa!" }));
+      .catch(() => {
+        debuggLog("Erro ao procurar empresa!", "err");
+        return { Err: "Erro ao procurar empresa!" };
+      });
   },
   //Deleta uma empresa
   async deleteRepo(id) {
@@ -95,6 +112,7 @@ module.exports = {
     const findCompany = await CompanyModel.findByPk(id);
     //Retorna mensagem de erro se não encontra uma empresa.
     if (!findCompany) {
+      debuggLog("Empresa não encontrada!", "atention");
       return { Err: "Empresa não encontrada! " };
     }
     //metodo de delatar empresa.

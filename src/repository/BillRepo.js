@@ -2,6 +2,7 @@ const Bill = require("../model/BillModel");
 const BillModel = require("../model/BillModel");
 const Company = require("../model/CompanyModel");
 const User = require("../model/UserModel");
+const { debuggLog } = require("../utils/debuggLog");
 const { verifyParamsForDB } = require("../utils/verifyParams");
 
 module.exports = {
@@ -21,16 +22,23 @@ module.exports = {
     // Faz uma procura por um usuário atravez do e-mail.
     const companyFind = await Company.findOne({ where: { id: company_id } });
     //Verifica se o email já existe no banco.
-    if (!companyFind) return { Err: "Empresa não cadastrada!" };
+    if (!companyFind) {
+      debuggLog("Empresa não cadastrada!", "atention");
+      return { Err: "Empresa não cadastrada!" };
+    }
     //Verifica se a empresa passada ja tem uma conta igual a citada.
     const verifyCompany =
       billFind == null ? false : billFind.dataValues.company_id == company_id;
     //Verifica se o nome da conta já existe no banco.
-    if (verifyCompany) return { Err: "Conta já cadastrada!" };
+    if (verifyCompany) {
+      debuggLog("Divida já cadastrada!", "atention");
+      return { Err: "Divida já cadastrada!" }};
     // Faz uma procura por um usuário atravez do e-mail.
     const userFind = await User.findOne({ where: { id: creator_id } });
     //Verifica se o email já existe no banco.
-    if (!userFind) return { Err: "Usuário não existe!" };
+    if (!userFind) {
+      debuggLog("Usuário não existe!", "atention");
+      return { Err: "Usuário não existe!" }};
     //Cria um novo cadastro no banco.
     const billCreator = await BillModel.create(
       { name, value, portion, company_id },
@@ -39,11 +47,13 @@ module.exports = {
     //Cria associação para os modelos
     billCreator.setBillCreator(creator_id);
     try {
+      debuggLog("Divida cadastrada com sucesso!", "sucess");
       //verifica se o cadastro foi bem sucedido.
-      return { sucess: "Conta cadastrada com sucesso!" };
+      return { sucess: "Divida cadastrada com sucesso!" };
     } catch {
+      debuggLog("Erro ao cadastrar Divida!", "err");
       //retorna uma mensagem de erro se o cadastro nao for sucedido
-      return { Err: "Erro ao cadastrar conta! " };
+      return { Err: "Erro ao cadastrar Divida! " };
     }
   },
   //Pesquisa por todas contas
@@ -64,10 +74,14 @@ module.exports = {
     });
     try {
       //verifica se a pesquisa foi bem sucedido e retorn a pesquisa
-      return findAllUsers.map((itens) => itens.dataValues);
+      debuggLog("Pesquisa por dividas bem sucedida!", "sucess");
+      return findAllUsers.map((itens) => {
+        return itens.dataValues;
+      });
     } catch {
+      debuggLog("Erro ao procurar divida!", "err");
       //retorna uma mensagem de erro se a pesquisa não for sucedida
-      return { Err: "Erro ao procurar usuários! " };
+      return { Err: "Erro ao procurar divida!" };
     }
   },
   //Pesquisa apenas uma contas
@@ -87,11 +101,20 @@ module.exports = {
       ],
     })
       //verifica se a pesquisa foi bem sucedido e retorn a pesquisa
-      .then((data) =>
-        data == null ? { Err: "Usuários não encontrado! " } : data.dataValues
-      )
+      .then((data) => {
+        if (data == null) {
+          debuggLog("Divida não encontrado!", "atention");
+          return { Err: "Divida não encontrado! " };
+        } else {
+          debuggLog("Pesquisa por dividas expecifica sucedida!", "sucess");
+          return data.dataValues;
+        }
+      })
       //retorna uma mensagem de erro se a pesquisa não for sucedida
-      .catch(() => ({ Err: "Erro ao procurar usuários! " }));
+      .catch(() => {
+        debuggLog("Erro ao procurar divida!", "err");
+        return { Err: "Erro ao procurar divida! " };
+      });
   },
   //Deleta uma contas
   async updateRepo(id, data) {
@@ -99,28 +122,36 @@ module.exports = {
     const findUser = await BillModel.findByPk(id);
     //Retorna mensagem de erro se não encontra um usuário.
     if (!findUser) {
+      debuggLog("Usuários não encontrado!", "atention");
       return { Err: "Usuários não encontrado! " };
     }
     //metodo de delatar usuário.
     return await BillModel.destroy({ where: { id: id } })
       //Retorna mensagem sucesso se o usuário foi deletado.
-      .then(() => ({ Sucess: "Usuário deletado! " }))
+      .then(() => ({ Sucess: "Divida atualizada! " }))
       //retorna mensagem de erro se o usuário não foi deletado.
-      .catch(() => ({ Err: "Erro ao deletar usuários! " }));
+      .catch(() => ({ Err: "Erro ao deletar divida! " }));
   },
   //Deleta uma contas
   async deleteRepo(id) {
     //procura por usuário.
-    const findUser = await BillModel.findByPk(id);
+    const billFind = await BillModel.findByPk(id);
     //Retorna mensagem de erro se não encontra um usuário.
-    if (!findUser) {
-      return { Err: "Usuários não encontrado! " };
+    if (!billFind) {
+      debuggLog("Divida não encontrada!", "atention");
+      return { Err: "Divida não encontrada! " };
     }
     //metodo de delatar usuário.
     return await BillModel.destroy({ where: { id: id } })
       //Retorna mensagem sucesso se o usuário foi deletado.
-      .then(() => ({ Sucess: "Usuário deletado! " }))
+      .then(() => {
+        debuggLog("Divida deletada!", "sucess");
+        return { Sucess: "Divida deletada! " };
+      })
       //retorna mensagem de erro se o usuário não foi deletado.
-      .catch(() => ({ Err: "Erro ao deletar usuários! " }));
+      .catch(() => {
+        debuggLog("Erro ao deletar divida!", "err");
+        return { Err: "Erro ao deletar divida! " };
+      });
   },
 };

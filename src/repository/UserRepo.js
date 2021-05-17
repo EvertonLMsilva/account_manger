@@ -1,4 +1,5 @@
 const UserModel = require("../model/UserModel");
+const { debuggLog } = require("../utils/debuggLog");
 const { verifyParamsForDB } = require("../utils/verifyParams");
 
 module.exports = {
@@ -15,13 +16,18 @@ module.exports = {
     // Faz uma procura por um usuário atravez do e-mail.
     const emailFind = await UserModel.findOne({ where: { email } });
     //Verifica se o email já existe no banco.
-    if (emailFind) return { Err: "Email já cadastrado!" };
+    if (emailFind) {
+      debuggLog("Email já cadastrado!", "atention");
+      return { Err: "Email já cadastrado!" };
+    }
     //Cria um novo cadastro no banco.
     await UserModel.create({ name, email, password, role });
     try {
       //verifica se o cadastro foi bem sucedido.
+      debuggLog("Usuário cadastrado com sucesso!", "sucess");
       return { sucess: "Usuário cadastrado com sucesso!" };
     } catch {
+      debuggLog("Erro ao cadastrar usuário!", "err");
       //retorna uma mensagem de erro se o cadastro nao for sucedido
       return { Err: "Erro ao cadastrar usuário! " };
     }
@@ -33,10 +39,12 @@ module.exports = {
       attributes: { exclude: ["password"] },
     })
       .then((data) => {
+        debuggLog("Pesquisa por usuário bem sucedida!", "sucess");
         //verifica se a pesquisa foi bem sucedido e retorn a pesquisa
         return data.map((itens) => itens.dataValues);
       })
       .catch(() => {
+        debuggLog("Erro ao procurar usuários!", "err");
         //retorna uma mensagem de erro se a pesquisa não for sucedida
         return { Err: "Erro ao procurar usuários! " };
       });
@@ -48,11 +56,20 @@ module.exports = {
       attributes: { exclude: ["password"] },
     })
       //verifica se a pesquisa foi bem sucedido e retorn a pesquisa
-      .then((data) =>
-        data == null ? { Err: "Usuários não encontrado! " } : data.dataValues
-      )
+      .then((data) => {
+        if (data == null) {
+          debuggLog("Usuários não encontrado!", "atention");
+          return { Err: "Usuários não encontrado! " };
+        } else {
+          debuggLog("Pesquisa por usuário expecifico bem sucedida!", "sucess");
+          return data.dataValues;
+        }
+      })
       //retorna uma mensagem de erro se a pesquisa não for sucedida
-      .catch(() => ({ Err: "Erro ao procurar usuários! " }));
+      .catch(() => {
+        debuggLog("Erro ao procurar usuários!", "err");
+        return { Err: "Erro ao procurar usuários! " };
+      });
   },
   //Deleta um usuário
   async deleteRepo(id) {
@@ -60,13 +77,20 @@ module.exports = {
     const findUser = await UserModel.findByPk(id);
     //Retorna mensagem de erro se não encontra um usuário.
     if (!findUser) {
+      debuggLog("Usuários não encontrado!", "atention");
       return { Err: "Usuários não encontrado! " };
     }
     //metodo de delatar usuário.
     return await UserModel.destroy({ where: { id: id } })
       //Retorna mensagem sucesso se o usuário foi deletado.
-      .then(() => ({ Sucess: "Usuário deletado! " }))
+      .then(() => {
+        debuggLog("Usuário deletado!", "sucess");
+        return { Sucess: "Usuário deletado! " };
+      })
       //retorna mensagem de erro se o usuário não foi deletado.
-      .catch(() => ({ Err: "Erro ao deletar usuários! " }));
+      .catch(() => {
+        debuggLog("Erro ao deletar usuários!", "err");
+        return { Err: "Erro ao deletar usuários! " };
+      });
   },
 };

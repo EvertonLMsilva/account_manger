@@ -1,4 +1,5 @@
 const BillRepo = require("../repository/BillRepo");
+const { debuggLog } = require("../utils/debuggLog");
 
 module.exports = {
   //metodo de pesquisa de todas as contas
