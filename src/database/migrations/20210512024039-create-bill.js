@@ -19,12 +19,12 @@ module.exports = {
       },
       portion: {
         type: Sequelize.INTEGER,
-        allowNull: false,
+        allowNull: true,
       },
-      creator_id:{
+      company_id:{
         type: Sequelize.INTEGER,
         allowNull: true,
-        references: { model: "users", key: "id" },
+        references: { model: "company", key: "id" },
         onUpdate: "CASCADE",
         onDelete: "CASCADE",
       },

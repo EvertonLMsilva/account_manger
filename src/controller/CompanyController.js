@@ -21,9 +21,9 @@ module.exports = {
   //Metodo de registro
   async register(req, res) {
     //separa pelo destructor as variaveis enviadas na requisição
-    const { name, phone, creator_id } = req.body;
+    const { name, phone, creator_id, client_id } = req.body;
     //Chamada para o metodo de cadastro do repositorio.
-    const newCompany = await CompanyRepo.registerRepo(name, phone, creator_id);
+    const newCompany = await CompanyRepo.registerRepo(name, phone, creator_id, client_id);
 
     return res.json(newCompany);
   },

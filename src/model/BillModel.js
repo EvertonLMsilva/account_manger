@@ -27,15 +27,15 @@ class Bill extends Model {
     return this;
   }
   static associate(models) {
+    this.belongsToMany(models.User, {
+      through: "bill_creator",
+      as: "billCreator",
+      foreignKey: "bill_id",
+    });
     this.belongsTo(models.Company, {
       through: "bill_company",
       as: "billCompany",
       foreignKey: "company_id",
-    });
-    this.belongsTo(models.User, {
-      through: "bill_creator",
-      as: "billCreator",
-      foreignKey: "bill_id",
     });
   }
 }

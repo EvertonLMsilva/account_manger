@@ -12,13 +12,6 @@ class Company extends Model {
           type: DataTypes.STRING,
           allowNull: false,
         },
-        creator_id:{
-          type: DataTypes.INTEGER,
-          allowNull: false,
-          references: { model: "users", key: "id" },
-          onUpdate: "CASCADE",
-          onDelete: "CASCADE",
-        },
       },
       {
         sequelize,
@@ -30,21 +23,20 @@ class Company extends Model {
     return this;
   }
   static associate(models) {
-    this.belongsTo(models.User, {
-      through: "company_creator",
-      as: "creatorCompany",
-      foreignKey: "creator_id",
-    });
-    this.belongsTo(models.User, {
-      through: "company_client",
-      as: "companyClient",
-      foreignKey: "client_id",
-    });
-    this.belongsTo(models.Bill, {
-      through: "bill_company",
-      as: "billCompany",
+    this.hasMany(models.Bill, {
+      as: "companyBill",
       foreignKey: "company_id",
     })
+    this.belongsTo(models.User, {
+      through: "company_creator",
+      as: "companyCreator",
+      foreignKey: "creator_id",
+    });
+    this.belongsToMany(models.User, {
+      through: "company_user",
+      as: "companyUser",
+      foreignKey: "company_id",
+    });
   }
 }
 module.exports = Company;

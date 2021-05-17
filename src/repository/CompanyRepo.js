@@ -1,29 +1,30 @@
 const CompanyModel = require("../model/CompanyModel");
 const { debuggLog } = require("../utils/debuggLog");
+const { verifyParamsForDB } = require("../utils/verifyParams");
 
 module.exports = {
   //Adicionar uma empresa
-  async registerRepo(name, phone, creator_id) {
-    //Verifica se algum dos parametros obrigatórios esta nulo.
-    if (!name || !phone || !creator_id) {
-      return {
-        err: `Campo ${
-          !name
-            ? "nome"
-            : !phone
-            ? "telefone"
-            : !creator_id
-            ? "creador"
-            : "permissão"
-        } não pode ser vazio!`,
-      };
-    }
+ async registerRepo(name, phone, creator_id, client_id) {
+   //Verifica se algum dos parametros obrigatórios esta nulo.
+   const verifyParams = await verifyParamsForDB([
+    { name },
+    { phone },
+    { creator_id },
+    { client_id },
+  ]);
+  if (verifyParams) return verifyParams;
     // Faz uma procura por uma empresa atravéz do telefone.
     const companyFind = await CompanyModel.findOne({ where: { phone } });
     //Verifica se a compania já existe no banco.
     if (companyFind) return { Err: "Telefone da empresa já cadastrado!" };
     //Cria um novo cadastro no banco.
-    await CompanyModel.create({ name, phone, creator_id });
+    const companyCreate = await CompanyModel.create(
+      { name, phone, creator_id },
+      {
+        include: ["companyCreator"],
+      }
+    );
+    companyCreate.setCompanyUser(client_id)
     try {
       //verifica se o cadastro foi bem sucedido.
       return { sucess: "Empresa cadastrada com sucesso!" };
@@ -39,16 +40,12 @@ module.exports = {
       order: [["name"]],
       include: [
         {
+          association: "companyUser",
+          attributes: ["name", "email"],
+        },
+        {
           association: "companyCreator",
-          attributes: ["name", "email"],
-        },
-        {
-          association: "companyClient",
-          attributes: ["name", "email"],
-        },
-        {
-          association: "companyBill",
-          attributes: ["name","value", "portion"],
+          attributes: ["name", "email", "role"],
         },
       ],
     })
@@ -62,7 +59,7 @@ module.exports = {
         return data.map((item) => item.dataValues);
       })
       //retorna uma mensagem de erro se a pesquisa não for sucedida
-      .catch(() => ({ Err: "Erro ao procurar usuários!" }));
+      .catch(() => ({ Err: "Erro ao procurar empresa!" }));
   },
   //Pesquisa apenas uma empresa
   async findOneRepo(id) {
@@ -73,6 +70,10 @@ module.exports = {
         {
           association: "companyUser",
           attributes: ["name", "email"],
+        },
+        {
+          association: "companyCreator",
+          attributes: ["name", "email", "role"],
         },
       ],
     })

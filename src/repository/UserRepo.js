@@ -1,16 +1,17 @@
 const UserModel = require("../model/UserModel");
+const { verifyParamsForDB } = require("../utils/verifyParams");
 
 module.exports = {
   //Adicionar Usuário
   async registerRepo(name, email, password, role) {
     //Verifica se algum dos parametros obrigatórios esta nulo.
-    if (!name || !email || !password || !role) {
-      return {
-        err: `Campo ${
-          !name ? "nome" : !email ? "e-mail" : !password ? "senha" : "permissão"
-        } não pode ser vazio!`,
-      };
-    }
+    const verifyParams = await verifyParamsForDB([
+      { name },
+      { email },
+      { password },
+      { role },
+    ]);
+    if (verifyParams) return verifyParams;
     // Faz uma procura por um usuário atravez do e-mail.
     const emailFind = await UserModel.findOne({ where: { email } });
     //Verifica se o email já existe no banco.
