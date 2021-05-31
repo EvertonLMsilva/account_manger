@@ -14,20 +14,15 @@ function _generateToken(id, role) {
 
 module.exports = {
   async authenticateRepo(email, password) {
-    if (!email || !password) {
+    if (!email || !password ) {
       return { err: "Campos e-mail e senha, não podem ser nulos!" };
     }
-
     const user = await UserModel.findOne({
       where: { email },
     });
 
-    if (!user) {
-      return { err: "usuário não encontrado!" };
-    }
-
-    if (!(await bcrypt.compare(password, user.password))) {
-      return { err: "E-mail ou senha inválido!" };
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      return {err: 400};
     }
 
     return {
